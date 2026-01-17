@@ -1,0 +1,301 @@
+{
+  "profiles": [
+    {
+      "id": "chrome_120",
+      "name": "Google Chrome",
+      "version": "120.0.0.0",
+      "engine": "Blink",
+      "user_agents": [
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      ],
+      "ja3": {
+        "fingerprint": "769,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513,29-23-24,0",
+        "hash": "cd08e31494f9531f560d64c695473da9"
+      },
+      "ja4": "t13d1516h2_8daaf6152771_e5627efa2ab1",
+      "http": {
+        "header_order": [
+          "Host",
+          "Connection",
+          "sec-ch-ua",
+          "sec-ch-ua-mobile",
+          "sec-ch-ua-platform",
+          "Upgrade-Insecure-Requests",
+          "User-Agent",
+          "Accept",
+          "Sec-Fetch-Site",
+          "Sec-Fetch-Mode",
+          "Sec-Fetch-User",
+          "Sec-Fetch-Dest",
+          "Accept-Encoding",
+          "Accept-Language"
+        ],
+        "headers": {
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+          "Accept-Encoding": "gzip, deflate, br",
+          "Accept-Language": "en-US,en;q=0.9",
+          "Connection": "keep-alive",
+          "sec-ch-ua": "\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Google Chrome\";v=\"120\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\"",
+          "Upgrade-Insecure-Requests": "1",
+          "Sec-Fetch-Site": "none",
+          "Sec-Fetch-Mode": "navigate",
+          "Sec-Fetch-User": "?1",
+          "Sec-Fetch-Dest": "document"
+        }
+      },
+      "tls": {
+        "versions": ["TLS 1.3", "TLS 1.2"],
+        "ciphers": [
+          "TLS_AES_128_GCM_SHA256",
+          "TLS_AES_256_GCM_SHA384",
+          "TLS_CHACHA20_POLY1305_SHA256",
+          "ECDHE-ECDSA-AES128-GCM-SHA256",
+          "ECDHE-RSA-AES128-GCM-SHA256"
+        ],
+        "extensions": [
+          "server_name",
+          "extended_master_secret",
+          "renegotiation_info",
+          "supported_groups",
+          "ec_point_formats",
+          "session_ticket",
+          "application_layer_protocol_negotiation",
+          "status_request",
+          "signature_algorithms",
+          "signed_certificate_timestamp",
+          "key_share",
+          "psk_key_exchange_modes",
+          "supported_versions",
+          "compress_certificate",
+          "application_settings"
+        ],
+        "supported_groups": ["x25519", "secp256r1", "secp384r1"],
+        "ec_point_formats": ["uncompressed"]
+      }
+    },
+    {
+      "id": "firefox_121",
+      "name": "Mozilla Firefox",
+      "version": "121.0",
+      "engine": "Gecko",
+      "user_agents": [
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 14.2; rv:121.0) Gecko/20100101 Firefox/121.0",
+        "Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0",
+        "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0"
+      ],
+      "ja3": {
+        "fingerprint": "771,4865-4867-4866-49195-49199-52393-52392-49196-49200-49162-49161-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-34-51-43-13-45-28-21,29-23-24-25-256-257,0",
+        "hash": "579ccef312d18482fc42e2b822ca2430"
+      },
+      "ja4": "t13d1517h2_8daaf6152771_02713d6af862",
+      "http": {
+        "header_order": [
+          "Host",
+          "User-Agent",
+          "Accept",
+          "Accept-Language",
+          "Accept-Encoding",
+          "Connection",
+          "Upgrade-Insecure-Requests",
+          "Sec-Fetch-Dest",
+          "Sec-Fetch-Mode",
+          "Sec-Fetch-Site",
+          "Sec-Fetch-User"
+        ],
+        "headers": {
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+          "Accept-Encoding": "gzip, deflate, br",
+          "Accept-Language": "en-US,en;q=0.5",
+          "Connection": "keep-alive",
+          "Upgrade-Insecure-Requests": "1",
+          "Sec-Fetch-Dest": "document",
+          "Sec-Fetch-Mode": "navigate",
+          "Sec-Fetch-Site": "none",
+          "Sec-Fetch-User": "?1"
+        }
+      },
+      "tls": {
+        "versions": ["TLS 1.3", "TLS 1.2"],
+        "ciphers": [
+          "TLS_AES_128_GCM_SHA256",
+          "TLS_CHACHA20_POLY1305_SHA256",
+          "TLS_AES_256_GCM_SHA384",
+          "ECDHE-ECDSA-AES128-GCM-SHA256",
+          "ECDHE-RSA-AES128-GCM-SHA256"
+        ],
+        "extensions": [
+          "server_name",
+          "extended_master_secret",
+          "renegotiation_info",
+          "supported_groups",
+          "ec_point_formats",
+          "session_ticket",
+          "application_layer_protocol_negotiation",
+          "status_request",
+          "delegated_credentials",
+          "key_share",
+          "supported_versions",
+          "signature_algorithms",
+          "psk_key_exchange_modes",
+          "record_size_limit",
+          "padding"
+        ],
+        "supported_groups": ["x25519", "secp256r1", "secp384r1", "secp521r1", "ffdhe2048", "ffdhe3072"],
+        "ec_point_formats": ["uncompressed"]
+      }
+    },
+    {
+      "id": "safari_17",
+      "name": "Apple Safari",
+      "version": "17.2",
+      "engine": "WebKit",
+      "user_agents": [
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1",
+        "Mozilla/5.0 (iPad; CPU OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1"
+      ],
+      "ja3": {
+        "fingerprint": "771,4865-4866-4867-49196-49195-52393-49200-49199-52392-49162-49161-49172-49171-157-156-53-47-49160-49170-10,0-23-65281-10-11-16-5-13-18-51-45-43-27,29-23-24-25,0",
+        "hash": "773906b0efdefa24a7f2b8eb6985bf37"
+      },
+      "ja4": "t13d1715h2_8daaf6152771_b0da82dd1658",
+      "http": {
+        "header_order": [
+          "Host",
+          "Accept",
+          "Sec-Fetch-Site",
+          "Accept-Language",
+          "Sec-Fetch-Mode",
+          "Accept-Encoding",
+          "Sec-Fetch-Dest",
+          "User-Agent",
+          "Connection"
+        ],
+        "headers": {
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Accept-Encoding": "gzip, deflate, br",
+          "Accept-Language": "en-US,en;q=0.9",
+          "Connection": "keep-alive",
+          "Sec-Fetch-Dest": "document",
+          "Sec-Fetch-Mode": "navigate",
+          "Sec-Fetch-Site": "none"
+        }
+      },
+      "tls": {
+        "versions": ["TLS 1.3", "TLS 1.2"],
+        "ciphers": [
+          "TLS_AES_128_GCM_SHA256",
+          "TLS_AES_256_GCM_SHA384",
+          "TLS_CHACHA20_POLY1305_SHA256",
+          "ECDHE-ECDSA-AES256-GCM-SHA384",
+          "ECDHE-ECDSA-AES128-GCM-SHA256"
+        ],
+        "extensions": [
+          "server_name",
+          "extended_master_secret",
+          "renegotiation_info",
+          "supported_groups",
+          "ec_point_formats",
+          "application_layer_protocol_negotiation",
+          "status_request",
+          "signature_algorithms",
+          "signed_certificate_timestamp",
+          "key_share",
+          "psk_key_exchange_modes",
+          "supported_versions",
+          "compress_certificate"
+        ],
+        "supported_groups": ["x25519", "secp256r1", "secp384r1", "secp521r1"],
+        "ec_point_formats": ["uncompressed"]
+      }
+    },
+    {
+      "id": "edge_120",
+      "name": "Microsoft Edge",
+      "version": "120.0.0.0",
+      "engine": "Blink",
+      "user_agents": [
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.2210.91"
+      ],
+      "ja3": {
+        "fingerprint": "769,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513,29-23-24,0",
+        "hash": "cd08e31494f9531f560d64c695473da9"
+      },
+      "ja4": "t13d1516h2_8daaf6152771_e5627efa2ab1",
+      "http": {
+        "header_order": [
+          "Host",
+          "Connection",
+          "sec-ch-ua",
+          "sec-ch-ua-mobile",
+          "sec-ch-ua-platform",
+          "Upgrade-Insecure-Requests",
+          "User-Agent",
+          "Accept",
+          "Sec-Fetch-Site",
+          "Sec-Fetch-Mode",
+          "Sec-Fetch-User",
+          "Sec-Fetch-Dest",
+          "Accept-Encoding",
+          "Accept-Language"
+        ],
+        "headers": {
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+          "Accept-Encoding": "gzip, deflate, br",
+          "Accept-Language": "en-US,en;q=0.9",
+          "Connection": "keep-alive",
+          "sec-ch-ua": "\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Microsoft Edge\";v=\"120\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\"",
+          "Upgrade-Insecure-Requests": "1",
+          "Sec-Fetch-Site": "none",
+          "Sec-Fetch-Mode": "navigate",
+          "Sec-Fetch-User": "?1",
+          "Sec-Fetch-Dest": "document"
+        }
+      },
+      "tls": {
+        "versions": ["TLS 1.3", "TLS 1.2"],
+        "ciphers": [
+          "TLS_AES_128_GCM_SHA256",
+          "TLS_AES_256_GCM_SHA384",
+          "TLS_CHACHA20_POLY1305_SHA256",
+          "ECDHE-ECDSA-AES128-GCM-SHA256",
+          "ECDHE-RSA-AES128-GCM-SHA256"
+        ],
+        "extensions": [
+          "server_name",
+          "extended_master_secret",
+          "renegotiation_info",
+          "supported_groups",
+          "ec_point_formats",
+          "session_ticket",
+          "application_layer_protocol_negotiation",
+          "status_request",
+          "signature_algorithms",
+          "signed_certificate_timestamp",
+          "key_share",
+          "psk_key_exchange_modes",
+          "supported_versions",
+          "compress_certificate",
+          "application_settings"
+        ],
+        "supported_groups": ["x25519", "secp256r1", "secp384r1"],
+        "ec_point_formats": ["uncompressed"]
+      }
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "last_updated": "2024-01-15",
+    "description": "Browser fingerprint profiles for PHANTOM traffic mimicry"
+  }
+}

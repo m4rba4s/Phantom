@@ -1,0 +1,72 @@
+[package]
+name = "phantom"
+version = "0.1.0"
+edition = "2021"
+authors = ["PHANTOM Security Team"]
+description = "Stealth traffic masquerading framework for authorized penetration testing"
+license = "MIT"
+readme = "README.md"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+
+# CLI
+clap = { version = "4.4", features = ["derive"] }
+
+# Configuration
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+serde_json = "1.0"
+
+# Networking
+pnet = "0.34"
+socket2 = { version = "0.5", features = ["all"] }
+libc = "0.2"
+trust-dns-resolver = "0.23"
+trust-dns-proto = "0.23"
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Timing and randomness
+rand = "0.8"
+rand_distr = "0.4"
+tokio-util = { version = "0.7", features = ["time"] }
+
+# Async traits
+async-trait = "0.1"
+
+# Encoding
+base32 = "0.4"
+md5 = "0.7"
+
+# TUI (optional)
+ratatui = { version = "0.25", optional = true }
+crossterm = { version = "0.27", optional = true }
+
+# Crypto for tunneling
+base64 = "0.21"
+hex = "0.4"
+
+# Byte manipulation
+bytes = "1.5"
+
+[features]
+default = []
+tui = ["ratatui", "crossterm"]
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true
+
+[[bin]]
+name = "phantom"
+path = "src/main.rs"

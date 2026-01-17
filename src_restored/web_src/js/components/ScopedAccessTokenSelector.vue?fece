@@ -1,0 +1,8 @@
+import { render } from "./ScopedAccessTokenSelector.vue?vue&type=template&id=51eb2941"
+import script from "./ScopedAccessTokenSelector.vue?vue&type=script&lang=js"
+export * from "./ScopedAccessTokenSelector.vue?vue&type=script&lang=js"
+
+import exportComponent from "../../../node_modules/vue-loader/dist/exportHelper.js"
+const __exports__ = /*#__PURE__*/exportComponent(script, [['render',render]])
+
+export default __exports__

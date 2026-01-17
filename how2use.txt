@@ -1,0 +1,104 @@
+PHANTOM - OPERATIONAL MANUAL
+============================
+WARNING: AUTHORIZED USE ONLY.
+If you use this for illegal shit and get caught, don't cry to me.
+============================
+
+PREREQUISITES
+-------------
+1. Linux (Windows users: install WSL or go away).
+2. ROOT ACCESS (`sudo` or `CAP_NET_RAW`).
+   - Why? Because we craft raw TCP packets. We don't ask the kernel nicely; we tell it what to do.
+3. A functioning brain (optional but recommended).
+
+BUILDING
+--------
+    cargo build --release
+    # Binary is at ./target/release/phantom
+
+QUICK START (The "I just want it to work" mode)
+-----------------------------------------------
+    sudo ./phantom --i-am-authorized scan <TARGET_IP>
+
+    * Note: You MUST use an IP address. DNS resolution is disabled to prevent leaking your queries to the ISP/System Resolver.
+    * Note: You MUST use --i-am-authorized. This isn't a toy.
+
+CORE COMMANDS
+-------------
+
+1. SCAN (The bread and butter)
+   Performs a Stealth SYN Scan. It sends TCP SYN packets, waits for SYN-ACK (Open) or RST (Closed), and never completes the handshake.
+
+   Syntax:
+   phantom scan <TARGET_IP> [OPTIONS]
+
+   Key Options:
+   --ports <LIST>       : Ports to scan. Comma-separated or ranges.
+                          Default: Top 10 common ports (80, 443, 22, etc).
+                          Example: --ports 22,80,8080-8090
+
+   --mtu <SIZE>         : Fragment size. 
+                          Default: 24 bytes (Safe stealth).
+                          Set to 8 for "Tiny Fragments" (Riskier, might be dropped).
+                          Set to 0 or use --no-fragment to disable.
+
+   --decoys <N>         : Send traffic to <N> benign targets (Google, Cloudflare) 
+                          while scanning to blend in.
+                          Default: 0. Recommended: 1-3.
+
+   --delay <MS>         : Delay between packets in milliseconds.
+                          Default: 100ms. Increase this if the firewall is aggressive.
+
+EXAMPLES
+--------
+
+[1] The "Firewall Ghost" (Standard Stealth)
+    Scans Port 80 and 443 with MTU 24 fragmentation (bypasses basic packet filters).
+    
+    sudo ./phantom --i-am-authorized scan 192.168.1.5 --ports 80,443
+
+[2] The "Paranoid Ninja" (High Evasion)
+    Scans SSH (22) with tiny fragments (MTU 16), sends noise to 3 random benign hosts, and waits 500ms between probes.
+    
+    sudo ./phantom --i-am-authorized scan 192.168.1.5 \
+        --ports 22 \
+        --mtu 16 \
+        --decoys 3 \
+        --delay 500
+
+[3] The "Loud & Proud" (No Evasion - for baseline)
+    Disables fragmentation. Useful to check if the firewall is blocking fragments.
+    
+    sudo ./phantom --i-am-authorized scan 192.168.1.5 --no-fragment
+
+TROUBLESHOOTING
+---------------
+
+Q: "Permission denied"
+A: Sudo. You need root. Read the prerequisites again.
+
+Q: "Scan complete: 0 open"
+A: 
+   1. The host is down.
+   2. The ports are actually closed.
+   3. The firewall dropped your fragments. Try `--mtu 24` or `--no-fragment`.
+   4. You are rate-limited. Increase `--delay`.
+
+Q: "It crashed"
+A: Report it. It's written in Rust, so it shouldn't segfault, but logic bugs happen.
+
+EXPERIMENTAL FEATURES (Use at own risk)
+---------------------------------------
+These features are present but may be unstable or stubbed.
+
+* proxy: Intercepts local traffic.
+* tunnel: DNS tunneling POC.
+
+FINAL WORDS
+-----------
+Don't be stupid. 
+Use a VPN. 
+Don't scan government assets. 
+Don't scan your ISP unless you want a phone call.
+
+- Linus Rage Reviewer

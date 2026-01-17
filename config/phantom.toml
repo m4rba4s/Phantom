@@ -1,0 +1,92 @@
+# PHANTOM Configuration File
+# Pentest Traffic Masquerading Framework
+#
+# WARNING: This tool is for AUTHORIZED penetration testing ONLY.
+# Unauthorized use is illegal.
+
+[general]
+# Operating mode:
+#   ghost    - Maximum stealth (fragmentation + timing + decoys + mimicry)
+#   shadow   - Balanced stealth (fragmentation + timing + mimicry)
+#   tactical - Basic evasion (fragmentation only)
+#   loud     - No evasion (for testing/comparison)
+mode = "shadow"
+
+# Log level: trace, debug, info, warn, error
+log_level = "info"
+
+# Enable audit logging (recommended for legal compliance)
+audit_log = true
+audit_path = "phantom_audit.log"
+
+[proxy]
+# Listen address for the proxy
+listen = "127.0.0.1:8080"
+
+# Source ports to rotate through (appear as legitimate traffic)
+# 53 = DNS, 80 = HTTP, 443 = HTTPS, 88 = Kerberos
+source_ports = [53, 80, 443, 88, 8080]
+
+# IP fragmentation MTU (smaller = more fragments = harder to reassemble for IDS)
+# Minimum recommended: 8 bytes
+fragment_mtu = 8
+
+# Number of decoy packets to send (ghost mode only)
+decoy_count = 5
+
+# TCP segmentation (split TCP payloads)
+tcp_segmentation = false
+max_segment_size = 536
+
+[tunnel]
+# Primary tunnel protocol: dns, icmp, doh, https
+primary = "dns"
+
+# DNS server for standard DNS tunneling
+dns_server = "8.8.8.8"
+
+# Domain for DNS tunneling (must control authoritative NS)
+domain = "legit-looking-domain.com"
+
+# DNS-over-HTTPS endpoint
+doh_endpoint = "https://cloudflare-dns.com/dns-query"
+
+# Maximum bytes per DNS query (63 max for label, 253 max for domain)
+dns_chunk_size = 63
+
+# ICMP echo payload size
+icmp_payload_size = 56
+
+[timing]
+# Timing mode:
+#   fixed    - Constant delays
+#   adaptive - Adjust based on RTT
+#   human    - Simulate human browsing patterns
+mode = "adaptive"
+
+# Delay range (milliseconds)
+min_delay_ms = 100
+max_delay_ms = 3000
+
+# Random jitter percentage (0-100)
+jitter_percent = 30
+
+# RTT multiplier for adaptive mode
+rtt_multiplier = 1.5
+
+[mimicry]
+# Enable traffic mimicry features
+enabled = true
+
+# Browser profile to impersonate
+# Options: chrome_120, firefox_121, safari_17, edge_120
+browser_profile = "chrome_120"
+
+# Rotate User-Agent strings from profile
+rotate_ua = true
+
+# JA3/JA4 TLS fingerprint spoofing (experimental)
+ja3_spoof = false
+
+# HTTP header ordering to match browser profiles
+header_order = true
