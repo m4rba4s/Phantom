@@ -145,6 +145,13 @@ enum Commands {
 
     /// Start interactive wizard
     Interactive,
+
+    /// Load and attach eBPF XDP filter
+    EbpfFilter {
+        /// Network interface to attach to
+        #[arg(short, long)]
+        iface: String,
+    },
 }
 
 fn init_logging(verbosity: u8) {
@@ -307,6 +314,31 @@ async fn main() -> Result<()> {
 
         Commands::Interactive => {
             menu::run_interactive_wizard(&config).await?;
+        }
+
+        Commands::EbpfFilter { iface } => {
+            info!("Loading eBPF XDP program to interface {}", iface);
+            
+            // Handle Ctrl-C
+            let (tx, mut rx) = tokio::sync::mpsc::channel(1);
+            tokio::spawn(async move {
+                tokio::signal::ctrl_c().await.unwrap();
+                tx.send(()).await.unwrap();
+            });
+
+            match transport::ebpf::EbpfLoader::load_and_attach(&iface) {
+                Ok(_loader) => {
+                    info!("eBPF XDP program loaded successfully!");
+                    info!("Send a packet with DEAD BEEF pattern to test it.");
+                    info!("Press Ctrl-C to detach and exit.");
+                    rx.recv().await;
+                    info!("Detaching eBPF program...");
+                }
+                Err(e) => {
+                    eprintln!("Failed to load eBPF program: {}", e);
+                    std::process::exit(1);
+                }
+            }
         }
     }
 

@@ -8,7 +8,7 @@ use crate::{proxy, scanner, tunnel};
 pub async fn run_interactive_wizard(config: &PhantomConfig) -> Result<()> {
     println!("\nStarting PHANTOM Interactive Wizard...\n");
 
-    let modes = &["Scan", "Proxy", "Tunnel", "Wrap"];
+    let modes = &["Scan", "Proxy", "Tunnel", "Wrap", "eBPF Filter"];
     let selection = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Select operation mode")
         .default(0)
@@ -20,6 +20,7 @@ pub async fn run_interactive_wizard(config: &PhantomConfig) -> Result<()> {
         1 => run_proxy_wizard(config).await?,
         2 => run_tunnel_wizard(config).await?,
         3 => run_wrap_wizard(config).await?,
+        4 => run_ebpf_wizard(config).await?,
         _ => unreachable!(),
     }
 
@@ -172,4 +173,42 @@ async fn run_wrap_wizard(config: &PhantomConfig) -> Result<()> {
     }
 
     proxy::wrap_command(config, &command).await
+}
+
+async fn run_ebpf_wizard(_config: &PhantomConfig) -> Result<()> {
+    let iface: String = Input::with_theme(&ColorfulTheme::default())
+        .with_prompt("Network interface to attach XDP filter (e.g. eth0, wlan0, xdp_test)")
+        .default("xdp_test".to_string())
+        .interact_text()?;
+
+    let authorized = Confirm::with_theme(&ColorfulTheme::default())
+        .with_prompt("I confirm I am authorized to attach eBPF programs to this interface")
+        .default(false)
+        .interact()?;
+
+    if !authorized {
+        anyhow::bail!("Authorization required to proceed.");
+    }
+
+    tracing::info!("Loading eBPF XDP program to interface {}", iface);
+            
+    // Handle Ctrl-C
+    let (tx, mut rx) = tokio::sync::mpsc::channel(1);
+    tokio::spawn(async move {
+        tokio::signal::ctrl_c().await.unwrap();
+        tx.send(()).await.unwrap();
+    });
+
+    match crate::transport::ebpf::EbpfLoader::load_and_attach(&iface) {
+        Ok(_loader) => {
+            tracing::info!("eBPF XDP program loaded successfully!");
+            tracing::info!("Press Ctrl-C to detach and exit.");
+            rx.recv().await;
+            tracing::info!("Detaching eBPF program...");
+            Ok(())
+        }
+        Err(e) => {
+            anyhow::bail!("Failed to load eBPF program: {}", e);
+        }
+    }
 }
