@@ -1,3 +1,4 @@
+#![allow(dead_code, unused_imports, clippy::enum_variant_names, clippy::wrong_self_convention, clippy::explicit_auto_deref)]
 //! PHANTOM Library - Pentest Traffic Masquerading Framework
 //!
 //! This library provides the core functionality for traffic masquerading

@@ -3,9 +3,10 @@
 //! Provides DNS, ICMP, and DoH tunneling for covert data exfiltration
 //! during authorized penetration testing.
 
+mod icmp;
 mod dns;
 mod doh;
-mod icmp;
+pub mod dns_auth;
 
 pub use dns::DnsTunnel;
 pub use doh::DohTunnel;

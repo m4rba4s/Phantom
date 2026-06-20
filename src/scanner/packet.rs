@@ -262,15 +262,17 @@ impl PacketBuilder {
         header
     }
 
-    fn ip_checksum(header: &[u8]) -> u16 {
+    pub(crate) fn ip_checksum(header: &[u8]) -> u16 {
         let mut sum: u32 = 0;
-
-        for i in (0..header.len()).step_by(2) {
-            let word = if i + 1 < header.len() {
-                ((header[i] as u32) << 8) | (header[i + 1] as u32)
-            } else {
-                (header[i] as u32) << 8
-            };
+        let mut chunks = header.chunks_exact(2);
+        
+        for chunk in &mut chunks {
+            let word = u16::from_be_bytes([chunk[0], chunk[1]]) as u32;
+            sum = sum.wrapping_add(word);
+        }
+        
+        if let Some(&remainder) = chunks.remainder().first() {
+            let word = u16::from_be_bytes([remainder, 0]) as u32;
             sum = sum.wrapping_add(word);
         }
 
@@ -297,23 +299,21 @@ impl PacketBuilder {
         sum = sum.wrapping_add((tcp_header.len() + self.payload.len()) as u32);
 
         // TCP header
-        for i in (0..tcp_header.len()).step_by(2) {
-            let word = if i + 1 < tcp_header.len() {
-                ((tcp_header[i] as u32) << 8) | (tcp_header[i + 1] as u32)
-            } else {
-                (tcp_header[i] as u32) << 8
-            };
-            sum = sum.wrapping_add(word);
+        let mut header_chunks = tcp_header.chunks_exact(2);
+        for chunk in &mut header_chunks {
+            sum = sum.wrapping_add(u16::from_be_bytes([chunk[0], chunk[1]]) as u32);
+        }
+        if let Some(&remainder) = header_chunks.remainder().first() {
+            sum = sum.wrapping_add(u16::from_be_bytes([remainder, 0]) as u32);
         }
 
         // Payload
-        for i in (0..self.payload.len()).step_by(2) {
-            let word = if i + 1 < self.payload.len() {
-                ((self.payload[i] as u32) << 8) | (self.payload[i + 1] as u32)
-            } else {
-                (self.payload[i] as u32) << 8
-            };
-            sum = sum.wrapping_add(word);
+        let mut payload_chunks = self.payload.chunks_exact(2);
+        for chunk in &mut payload_chunks {
+            sum = sum.wrapping_add(u16::from_be_bytes([chunk[0], chunk[1]]) as u32);
+        }
+        if let Some(&remainder) = payload_chunks.remainder().first() {
+            sum = sum.wrapping_add(u16::from_be_bytes([remainder, 0]) as u32);
         }
 
         // Fold
@@ -390,6 +390,94 @@ impl ParsedPacket {
             ack_num,
             flags,
         })
+    }
+}
+
+/// Stack-allocated packet builder for TCP SYN packets
+pub struct TcpSynBuilder {
+    pub src_ip: Ipv4Addr,
+    pub dst_ip: Ipv4Addr,
+    pub src_port: u16,
+    pub dst_port: u16,
+    pub seq_num: u32,
+    pub flags: TcpFlags,
+}
+
+impl TcpSynBuilder {
+    pub fn new(src_ip: Ipv4Addr, dst_ip: Ipv4Addr, src_port: u16, dst_port: u16, seq_num: u32) -> Self {
+        Self {
+            src_ip,
+            dst_ip,
+            src_port,
+            dst_port,
+            seq_num,
+            flags: TcpFlags::syn(),
+        }
+    }
+
+    pub fn build(&self) -> [u8; 40] {
+        let mut packet = [0u8; 40];
+        
+        // --- IP Header (20 bytes) ---
+        packet[0] = 0x45; // V4, IHL 5
+        packet[1] = 0x00; // TOS
+        packet[2] = 0x00; packet[3] = 40; // Total Length
+        
+        let id: u16 = rand::random();
+        packet[4] = (id >> 8) as u8; packet[5] = id as u8; // ID
+        
+        packet[6] = 0x40; packet[7] = 0x00; // DF flag
+        packet[8] = 64; // TTL
+        packet[9] = 6; // Protocol TCP
+        
+        let src_octets = self.src_ip.octets();
+        packet[12..16].copy_from_slice(&src_octets);
+        let dst_octets = self.dst_ip.octets();
+        packet[16..20].copy_from_slice(&dst_octets);
+        
+        let ip_csum = PacketBuilder::ip_checksum(&packet[0..20]);
+        packet[10] = (ip_csum >> 8) as u8; packet[11] = ip_csum as u8;
+        
+        // --- TCP Header (20 bytes) ---
+        let tcp_start = 20;
+        packet[tcp_start] = (self.src_port >> 8) as u8; packet[tcp_start + 1] = self.src_port as u8;
+        packet[tcp_start + 2] = (self.dst_port >> 8) as u8; packet[tcp_start + 3] = self.dst_port as u8;
+        
+        packet[tcp_start + 4] = (self.seq_num >> 24) as u8;
+        packet[tcp_start + 5] = (self.seq_num >> 16) as u8;
+        packet[tcp_start + 6] = (self.seq_num >> 8) as u8;
+        packet[tcp_start + 7] = self.seq_num as u8;
+        
+        // Ack = 0 (already zeroed by initialization)
+        
+        packet[tcp_start + 12] = 0x50; // Data offset 5
+        packet[tcp_start + 13] = self.flags.to_byte();
+        
+        packet[tcp_start + 14] = 0xFF; packet[tcp_start + 15] = 0xFF; // Window 65535
+        
+        // Calculate TCP checksum
+        let mut sum: u32 = 0;
+        sum = sum.wrapping_add(((src_octets[0] as u32) << 8) | (src_octets[1] as u32));
+        sum = sum.wrapping_add(((src_octets[2] as u32) << 8) | (src_octets[3] as u32));
+        sum = sum.wrapping_add(((dst_octets[0] as u32) << 8) | (dst_octets[1] as u32));
+        sum = sum.wrapping_add(((dst_octets[2] as u32) << 8) | (dst_octets[3] as u32));
+        sum = sum.wrapping_add(6);
+        sum = sum.wrapping_add(20);
+        
+        let mut tcp_chunks = packet[20..40].chunks_exact(2);
+        for chunk in &mut tcp_chunks {
+            sum = sum.wrapping_add(u16::from_be_bytes([chunk[0], chunk[1]]) as u32);
+        }
+        
+        while sum >> 16 != 0 {
+            sum = (sum & 0xFFFF) + (sum >> 16);
+        }
+        let tcp_csum = !(sum as u16);
+        
+        packet[tcp_start + 16] = (tcp_csum >> 8) as u8;
+        packet[tcp_start + 17] = tcp_csum as u8;
+        
+        packet
     }
 }
 

@@ -155,7 +155,7 @@ impl Tunnel for IcmpTunnel {
 
     async fn receive(&self) -> Result<Vec<u8>, TunnelError> {
         let mut rx = self.rx.lock().await;
-        let mut iter = icmp_packet_iter(&mut *rx);
+        let mut iter = icmp_packet_iter(&mut rx);
 
         // Use a timeout
         let timeout = std::time::Duration::from_secs(5);

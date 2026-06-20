@@ -5,9 +5,9 @@
 
 mod headers;
 mod ja3;
+pub mod ja4;
+pub mod client_hello;
 
-// pub use headers::{HeaderManipulator, HeaderOrder};
-// pub use ja3::{Ja3Fingerprint, Ja3Spoofer};
 
 // use crate::config::PhantomConfig;
 use rand::seq::SliceRandom;

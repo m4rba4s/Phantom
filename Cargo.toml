@@ -58,10 +58,19 @@ hex = "0.4"
 # Byte manipulation
 bytes = "1.5"
 dialoguer = "0.12.0"
+sha2 = "0.11.0"
+dashmap = "6.2.1"
+hmac = "0.13.0"
+proptest = "1.11.0"
+chromiumoxide = { version = "0.9.1", optional = true }
+governor = "0.10.4"
+aya-ebpf = "0.1.1"
 
 [features]
 default = []
 tui = ["ratatui", "crossterm"]
+chromium_capture = ["chromiumoxide"]
+fuzz = []
 
 [profile.release]
 opt-level = 3

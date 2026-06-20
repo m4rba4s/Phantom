@@ -10,10 +10,20 @@
 mod packet;
 mod syn_scan;
 mod fragmenter;
+pub mod scan_state;
+pub mod raw_socket;
+pub mod transport;
+pub mod af_packet;
 
-pub use packet::{PacketBuilder, TcpFlags};
+#[cfg(test)]
+mod ext_tests;
+
+pub use packet::{PacketBuilder, TcpSynBuilder, TcpFlags};
+#[cfg(unix)]
+pub use raw_socket::AsyncRawSocket;
 pub use syn_scan::{SynScanner, ScanResult, PortStatus};
 pub use fragmenter::IpFragmenter;
+pub use scan_state::ScanState;
 
 use crate::config::PhantomConfig;
 use anyhow::Result;
@@ -137,7 +147,7 @@ impl ScanConfig {
                 let d = rng.gen_range(1..255) as u8;
 
                 // Skip private ranges and localhost
-                if a == 10 || a == 127 || (a == 172 && b >= 16 && b <= 31) || (a == 192 && b == 168) {
+                if a == 10 || a == 127 || (a == 172 && (16..=31).contains(&b)) || (a == 192 && b == 168) {
                     continue;
                 }
                 break IpAddr::V4(std::net::Ipv4Addr::new(a, b, c, d));

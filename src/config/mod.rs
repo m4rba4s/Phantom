@@ -20,6 +20,7 @@ pub enum ConfigError {
 
 /// Main configuration structure
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct PhantomConfig {
     #[serde(default)]
     pub general: GeneralConfig,
@@ -184,17 +185,6 @@ fn default_jitter() -> u8 { 30 }
 fn default_rtt_multiplier() -> f64 { 1.5 }
 fn default_browser_profile() -> String { "chrome_120".to_string() }
 
-impl Default for PhantomConfig {
-    fn default() -> Self {
-        Self {
-            general: GeneralConfig::default(),
-            proxy: ProxyConfig::default(),
-            tunnel: TunnelConfig::default(),
-            timing: TimingConfig::default(),
-            mimicry: MimicryConfig::default(),
-        }
-    }
-}
 
 impl Default for GeneralConfig {
     fn default() -> Self {

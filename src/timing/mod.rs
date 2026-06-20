@@ -4,8 +4,8 @@
 //! to evade timing-based detection mechanisms.
 
 mod jitter;
+pub mod rate_limiter;
 
-pub use jitter::{HumanPattern, JitterGenerator};
 
 use crate::config::TimingConfig;
 use std::time::{Duration, Instant};
@@ -15,30 +15,24 @@ use tracing::debug;
 /// Controller for timing-based evasion
 pub struct TimingController {
     config: TimingConfig,
-    jitter: JitterGenerator,
+    jitter: rate_limiter::PhantomRateLimiter, // or remove jitter entirely from here if it's not needed, or use JitterEngine
     last_action: Option<Instant>,
     rtt_samples: Vec<Duration>,
-    human_pattern: Option<HumanPattern>,
 }
 
 impl TimingController {
     pub fn new(config: &TimingConfig) -> Self {
-        let human_pattern = if config.mode == "human" {
-            Some(HumanPattern::new())
-        } else {
-            None
-        };
-
         Self {
             config: config.clone(),
-            jitter: JitterGenerator::new(
-                config.min_delay_ms,
-                config.max_delay_ms,
-                config.jitter_percent,
-            ),
+            jitter: rate_limiter::PhantomRateLimiter::new(rate_limiter::RateLimiterConfig {
+                global_pps: 100,
+                per_target_pps: 10,
+                global_bps: 1024,
+                max_inflight: 10,
+                burst_size: 5,
+            }),
             last_action: None,
             rtt_samples: Vec::with_capacity(100),
-            human_pattern,
         }
     }
 
@@ -63,8 +57,7 @@ impl TimingController {
     /// Fixed delay with jitter
     fn fixed_delay(&self) -> Duration {
         let base = (self.config.min_delay_ms + self.config.max_delay_ms) / 2;
-        let jittered = self.jitter.apply_jitter(base);
-        Duration::from_millis(jittered)
+        Duration::from_millis(base)
     }
 
     /// Adaptive delay based on observed RTT
@@ -80,18 +73,13 @@ impl TimingController {
         // Base delay on RTT with multiplier
         let base_ms = (avg_rtt.as_millis() as f64 * self.config.rtt_multiplier) as u64;
         let clamped = base_ms.clamp(self.config.min_delay_ms, self.config.max_delay_ms);
-        let jittered = self.jitter.apply_jitter(clamped);
 
-        Duration::from_millis(jittered)
+        Duration::from_millis(clamped)
     }
 
     /// Human-like browsing delay
     fn human_delay(&mut self) -> Duration {
-        if let Some(ref mut pattern) = self.human_pattern {
-            pattern.next_delay()
-        } else {
-            self.fixed_delay()
-        }
+        self.fixed_delay()
     }
 
     /// Get time elapsed since last action
