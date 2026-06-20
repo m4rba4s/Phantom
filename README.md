@@ -30,11 +30,37 @@ The binary will be located at `target/release/phantom`.
 Phantom operates in several modes. Root privileges are required for raw socket operations (scanning/tunneling).
 
 ### Scan Mode
-Perform a stealth SYN scan against a target:
+Phantom supports advanced L3/L4 evasion techniques. The following commands demonstrate different scanning methodologies (replace `185.158.133.1` with your authorized target):
 
-```bash
-sudo ./phantom --i-am-authorized scan <TARGET_IP> --ports 80,443 --decoys 5
-```
+1. **Interactive Menu (Wizard)**
+   Step-by-step UI for configuring scans, proxies, and tunnels.
+   ```bash
+   sudo target/debug/phantom --i-am-authorized interactive
+   ```
+
+2. **Basic Stealth Scan (Default MTU 24, Delay 100ms)**
+   Performs a standard SYN scan with default IP fragmentation to bypass basic stateless inspection.
+   ```bash
+   sudo target/debug/phantom --i-am-authorized scan 185.158.133.1 -p 80,443,22
+   ```
+
+3. **Vanilla Scan (No Fragmentation)**
+   Disables fragmentation. Faster, but highly visible to IDS.
+   ```bash
+   sudo target/debug/phantom --i-am-authorized scan 185.158.133.1 -p 80,443,22 --no-fragment
+   ```
+
+4. **Advanced Evasion (Decoys & High Delay)**
+   Mixes your real traffic with 5 spoofed IP addresses and introduces a 500ms delay between packets to evade rate-limiting and confuse analysts.
+   ```bash
+   sudo target/debug/phantom --i-am-authorized scan 185.158.133.1 -p 80,443,22 --decoys 5 --delay 500
+   ```
+
+5. **Aggressive Discovery (All ports, fast)**
+   Shows all ports (including closed/filtered) with minimal delay.
+   ```bash
+   sudo target/debug/phantom --i-am-authorized scan 185.158.133.1 -a --no-fragment --delay 10
+   ```
 
 ### Tunnel Mode (Research)
 Establish a covert DNS channel (requires a controlled authoritative nameserver):
