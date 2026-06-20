@@ -8,7 +8,7 @@ use crate::{proxy, scanner, tunnel};
 pub async fn run_interactive_wizard(config: &PhantomConfig) -> Result<()> {
     println!("\nStarting PHANTOM Interactive Wizard...\n");
 
-    let modes = &["Scan", "Proxy", "Tunnel", "Wrap", "eBPF Filter"];
+    let modes = &["Scan", "Proxy", "Tunnel", "Wrap", "eBPF Filter", "TUI Dashboard (Top Tier)"];
     let selection = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Select operation mode")
         .default(0)
@@ -21,6 +21,7 @@ pub async fn run_interactive_wizard(config: &PhantomConfig) -> Result<()> {
         2 => run_tunnel_wizard(config).await?,
         3 => run_wrap_wizard(config).await?,
         4 => run_ebpf_wizard(config).await?,
+        5 => run_tui_dashboard().await?,
         _ => unreachable!(),
     }
 
@@ -211,4 +212,29 @@ async fn run_ebpf_wizard(_config: &PhantomConfig) -> Result<()> {
             anyhow::bail!("Failed to load eBPF program: {}", e);
         }
     }
+}
+
+async fn run_tui_dashboard() -> Result<()> {
+    #[cfg(feature = "tui")]
+    {
+        let mut dashboard = crate::tui::Dashboard::new();
+        dashboard.log("PHANTOM Tactical Dashboard Initialized".to_string());
+        dashboard.log("Loading modules...".to_string());
+        dashboard.log("Stealth protocols engaged.".to_string());
+        
+        // Run blocking TUI loop
+        tokio::task::spawn_blocking(move || {
+            if let Err(e) = dashboard.run() {
+                eprintln!("TUI Error: {}", e);
+            }
+        }).await?;
+    }
+    
+    #[cfg(not(feature = "tui"))]
+    {
+        println!("\n[!] TUI feature is not enabled in this build.");
+        println!("Please rebuild with: cargo build --release --features tui\n");
+    }
+    
+    Ok(())
 }
