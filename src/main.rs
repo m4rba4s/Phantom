@@ -20,6 +20,7 @@ mod proxy;
 mod scanner;
 mod timing;
 mod tunnel;
+mod menu;
 
 #[cfg(feature = "tui")]
 mod tui;
@@ -139,6 +140,9 @@ enum Commands {
 
     /// Show configuration
     ShowConfig,
+
+    /// Start interactive wizard
+    Interactive,
 }
 
 fn init_logging(verbosity: u8) {
@@ -297,6 +301,10 @@ async fn main() -> Result<()> {
 
         Commands::ShowConfig => {
             println!("{}", toml::to_string_pretty(&config)?);
+        }
+
+        Commands::Interactive => {
+            menu::run_interactive_wizard(&config).await?;
         }
     }
 
