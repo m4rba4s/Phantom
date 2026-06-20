@@ -42,6 +42,21 @@ async fn run_scan_wizard(config: &PhantomConfig) -> Result<()> {
         .default("80,443".to_string())
         .interact_text()?;
 
+    let scan_types = &["SYN Scan", "FIN Scan (Stealth)", "NULL Scan (Stealth)", "XMAS Scan (Stealth)"];
+    let scan_type_idx = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("Select scan technique")
+        .default(0)
+        .items(&scan_types[..])
+        .interact()?;
+        
+    let scan_type = match scan_type_idx {
+        0 => scanner::ScanType::Syn,
+        1 => scanner::ScanType::Fin,
+        2 => scanner::ScanType::Null,
+        3 => scanner::ScanType::Xmas,
+        _ => unreachable!(),
+    };
+
     let port_list = scanner::parse_ports(&ports)?;
 
     let do_fragment = Confirm::with_theme(&ColorfulTheme::default())
@@ -79,6 +94,7 @@ async fn run_scan_wizard(config: &PhantomConfig) -> Result<()> {
 
     let mut scan_config = scanner::ScanConfig {
         target: target_ip,
+        scan_type,
         ports: port_list,
         fragment: do_fragment,
         fragment_mtu: mtu as u16,
@@ -102,7 +118,14 @@ async fn run_scan_wizard(config: &PhantomConfig) -> Result<()> {
             let latency = result.latency_ms
                 .map(|l| format!("{:.2}ms", l))
                 .unwrap_or_else(|| "-".to_string());
-            println!("{:<8} \x1b[32mopen\x1b[0m       {:<10}", result.port, latency);
+            
+            // For stealth scans, Open ports might actually be Open|Filtered
+            let status_str = match scan_type {
+                scanner::ScanType::Syn => "\x1b[32mopen\x1b[0m       ",
+                _ => "\x1b[33mopen|filt\x1b[0m  ",
+            };
+                
+            println!("{:<8} {} {:<10}", result.port, status_str, latency);
         }
     }
 

@@ -21,7 +21,7 @@ mod ext_tests;
 pub use packet::{PacketBuilder, TcpSynBuilder, TcpFlags};
 #[cfg(unix)]
 pub use raw_socket::AsyncRawSocket;
-pub use syn_scan::{SynScanner, ScanResult, PortStatus};
+pub use syn_scan::{SynScanner, ScanResult, PortStatus, ScanType};
 pub use fragmenter::IpFragmenter;
 pub use scan_state::ScanState;
 
@@ -54,6 +54,9 @@ pub enum ScanError {
 pub struct ScanConfig {
     /// Target IP address
     pub target: IpAddr,
+
+    /// Scan Type
+    pub scan_type: ScanType,
 
     /// Ports to scan
     pub ports: Vec<u16>,
@@ -96,6 +99,7 @@ impl Default for ScanConfig {
     fn default() -> Self {
         Self {
             target: "127.0.0.1".parse().unwrap(),
+            scan_type: ScanType::Syn,
             ports: vec![80, 443, 22, 21, 25, 53, 110, 143, 3306, 5432, 8080],
             source_port: 0,
             fragment: true,
@@ -117,6 +121,7 @@ impl ScanConfig {
     pub fn from_phantom_config(config: &PhantomConfig, target: IpAddr, ports: Vec<u16>) -> Self {
         Self {
             target,
+            scan_type: ScanType::Syn,
             ports,
             source_port: 0,
             fragment: config.mode_settings().fragment,

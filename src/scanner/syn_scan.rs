@@ -21,6 +21,26 @@ use tokio::io::AsyncWriteExt;
 use tokio::time::sleep;
 use tracing::{debug, info, trace};
 
+/// Type of scan to perform
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ScanType {
+    Syn,
+    Fin,
+    Null,
+    Xmas,
+}
+
+impl std::fmt::Display for ScanType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ScanType::Syn => write!(f, "SYN"),
+            ScanType::Fin => write!(f, "FIN"),
+            ScanType::Null => write!(f, "NULL"),
+            ScanType::Xmas => write!(f, "XMAS"),
+        }
+    }
+}
+
 /// Port status result
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PortStatus {
@@ -159,6 +179,7 @@ impl SynScanner {
         let port_count = ports.len();
         let timeout_ms = self.config.timeout_ms;
         let local_ip = self.local_ip;
+        let scan_type = self.config.scan_type;
         
         // Spawn listener task
         let rx_handle = tokio::task::spawn_blocking(move || {
@@ -178,12 +199,25 @@ impl SynScanner {
                     if let Some(parsed) = ParsedPacket::parse(packet.packet()) {
                         if parsed.src_ip == target_v4 && parsed.dst_ip == local_ip {
                             let port = parsed.src_port;
-                            let status = if parsed.flags.syn && parsed.flags.ack {
-                                PortStatus::Open
-                            } else if parsed.flags.rst {
-                                PortStatus::Closed
-                            } else {
-                                continue;
+                            let status = match scan_type {
+                                ScanType::Syn => {
+                                    if parsed.flags.syn && parsed.flags.ack {
+                                        PortStatus::Open
+                                    } else if parsed.flags.rst {
+                                        PortStatus::Closed
+                                    } else {
+                                        continue;
+                                    }
+                                }
+                                ScanType::Fin | ScanType::Null | ScanType::Xmas => {
+                                    if parsed.flags.rst {
+                                        PortStatus::Closed
+                                    } else {
+                                        // These scans don't typically solicit responses from open ports,
+                                        // but if we see anything else, it might be an anomaly.
+                                        continue;
+                                    }
+                                }
                             };
                             
                             let _ = res_tx.blocking_send((port, status));
@@ -233,14 +267,19 @@ impl SynScanner {
 
         let _ = rx_handle.await;
 
-        // Mark unreplied ports as filtered
+        // Mark unreplied ports as filtered (or open|filtered for stealth modes)
         for port in &ports {
             if !self.results.contains_key(port) {
+                let default_status = match self.config.scan_type {
+                    ScanType::Syn => PortStatus::Filtered,
+                    ScanType::Fin | ScanType::Null | ScanType::Xmas => PortStatus::Open, // Actually Open|Filtered, but we map to Open for simplicity or display
+                };
+                
                 self.results.insert(
                     *port,
                     ScanResult {
                         port: *port,
-                        status: PortStatus::Filtered,
+                        status: default_status,
                         latency_ms: None,
                     },
                 );
@@ -272,10 +311,17 @@ impl SynScanner {
             if let IpAddr::V4(decoy_v4) = decoy_ip {
                 let src_port = self.get_source_port();
 
+                let flags = match self.config.scan_type {
+                    ScanType::Syn => TcpFlags::syn(),
+                    ScanType::Fin => TcpFlags::fin(),
+                    ScanType::Null => TcpFlags::null(),
+                    ScanType::Xmas => TcpFlags::xmas(),
+                };
+
                 let packet = PacketBuilder::new(decoy_v4, target)
                     .src_port(src_port)
                     .dst_port(port)
-                    .flags(TcpFlags::syn())
+                    .flags(flags)
                     .build();
 
                 self.send_packet(tx, &packet, target).await?;
@@ -299,10 +345,17 @@ impl SynScanner {
     ) -> Result<(), ScanError> {
         let src_port = self.get_source_port();
 
+        let flags = match self.config.scan_type {
+            ScanType::Syn => TcpFlags::syn(),
+            ScanType::Fin => TcpFlags::fin(),
+            ScanType::Null => TcpFlags::null(),
+            ScanType::Xmas => TcpFlags::xmas(),
+        };
+
         let packet = PacketBuilder::new(self.local_ip, target)
             .src_port(src_port)
             .dst_port(port)
-            .flags(TcpFlags::syn())
+            .flags(flags)
             .build();
 
         // Record probe time

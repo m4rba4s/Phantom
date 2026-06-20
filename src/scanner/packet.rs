@@ -40,6 +40,42 @@ impl TcpFlags {
     }
 
     #[allow(dead_code)]
+    pub fn fin() -> Self {
+        Self {
+            fin: true,
+            syn: false,
+            rst: false,
+            psh: false,
+            ack: false,
+            urg: false,
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn null() -> Self {
+        Self {
+            fin: false,
+            syn: false,
+            rst: false,
+            psh: false,
+            ack: false,
+            urg: false,
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn xmas() -> Self {
+        Self {
+            fin: true,
+            syn: false,
+            rst: false,
+            psh: true,
+            ack: false,
+            urg: true,
+        }
+    }
+
+    #[allow(dead_code)]
     pub fn rst() -> Self {
         Self {
             fin: false,
