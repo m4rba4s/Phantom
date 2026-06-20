@@ -45,4 +45,4 @@ phantom_audit.log
 *.pem
 *.key
 *.env
-secrets.toml
+secrets.toml/netprobe-ebpf/target

@@ -11,6 +11,7 @@ pub mod proxy;
 pub mod scanner;
 pub mod timing;
 pub mod tunnel;
+pub mod transport;
 
 #[cfg(feature = "tui")]
 pub mod tui;

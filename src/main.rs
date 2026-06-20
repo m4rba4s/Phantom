@@ -21,6 +21,7 @@ mod proxy;
 mod scanner;
 mod timing;
 mod tunnel;
+mod transport;
 mod menu;
 
 #[cfg(feature = "tui")]

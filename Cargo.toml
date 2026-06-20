@@ -52,7 +52,12 @@ ratatui = { version = "0.26", optional = true }
 crossterm = { version = "0.27", optional = true }
 
 # Crypto for tunneling
-base64 = "0.21"
+base64 = "0.22"
+rustls = "0.23"
+x25519-dalek = { version = "2.0", features = ["static_secrets"] }
+chacha20poly1305 = "0.10"
+blake2 = "0.10"
+hkdf = "0.12"
 hex = "0.4"
 
 # Byte manipulation
@@ -64,8 +69,8 @@ hmac = "0.13.0"
 proptest = "1.11.0"
 chromiumoxide = { version = "0.9.1", optional = true }
 governor = "0.10.4"
-aya-ebpf = "0.1.1"
-
+aya = "0.13"
+aya-log = "0.2"
 [features]
 default = []
 tui = ["ratatui", "crossterm"]
@@ -80,3 +85,9 @@ strip = true
 [[bin]]
 name = "phantom"
 path = "src/main.rs"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+nix = { version = "0.27", features = ["net", "ioctl"] }
+
+[workspace]
+members = ["netprobe-ebpf"]
