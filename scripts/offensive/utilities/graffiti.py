@@ -1,5 +1,4 @@
 import requests
-import sys
 import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -41,7 +40,7 @@ for t in TARGETS:
         # POST with body art
         requests.post(t, headers=HEADERS, data=ART, timeout=3, verify=False)
         print(" [Painted]")
-    except Exception as e:
-        print(f" [Hit]") # Errors are expected on raw ports
+    except Exception:
+        print(" [Hit]") # Errors are expected on raw ports
 
 print("\n[*] JOB DONE. Logs infected.")

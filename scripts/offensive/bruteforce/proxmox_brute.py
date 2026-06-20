@@ -19,7 +19,7 @@ def try_login(user, password):
             data = r.json()
             if data['data']['ticket']:
                 return True, data['data']['ticket'], data['data']['CSRFPreventionToken']
-    except Exception as e:
+    except Exception:
         pass
         # print(f"Error: {e}")
     return False, None, None

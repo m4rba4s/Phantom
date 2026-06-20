@@ -1,5 +1,4 @@
 import requests
-import sys
 import base64
 
 TARGET = "http://g.orehus.club/orehus/infra.git/info/refs?service=git-upload-pack"
