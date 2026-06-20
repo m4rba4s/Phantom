@@ -42,9 +42,28 @@ async fn run_scan_wizard(config: &PhantomConfig) -> Result<()> {
 
     let port_list = scanner::parse_ports(&ports)?;
 
+    let do_fragment = Confirm::with_theme(&ColorfulTheme::default())
+        .with_prompt("Enable IP Fragmentation (Stealth/Evasion)?")
+        .default(true)
+        .interact()?;
+
+    let mtu: u32 = if do_fragment {
+        Input::with_theme(&ColorfulTheme::default())
+            .with_prompt("Fragment MTU size (bytes)")
+            .default(24)
+            .interact_text()?
+    } else {
+        1500
+    };
+
     let decoys: u8 = Input::with_theme(&ColorfulTheme::default())
-        .with_prompt("Number of decoy hosts")
+        .with_prompt("Number of decoy hosts (Spoofed IPs)")
         .default(0)
+        .interact_text()?;
+
+    let delay_ms: u64 = Input::with_theme(&ColorfulTheme::default())
+        .with_prompt("Delay between probes (ms) - Increase for stealth")
+        .default(100)
         .interact_text()?;
 
     let authorized = Confirm::with_theme(&ColorfulTheme::default())
@@ -59,9 +78,9 @@ async fn run_scan_wizard(config: &PhantomConfig) -> Result<()> {
     let mut scan_config = scanner::ScanConfig {
         target: target_ip,
         ports: port_list,
-        fragment: true, // Default to true in interactive mode
-        fragment_mtu: 24,
-        delay_ms: 100,
+        fragment: do_fragment,
+        fragment_mtu: mtu as u16,
+        delay_ms,
         jitter_percent: config.timing.jitter_percent,
         decoy_count: decoys,
         ..Default::default()
