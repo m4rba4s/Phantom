@@ -8,7 +8,7 @@ use crate::{proxy, scanner, tunnel};
 pub async fn run_interactive_wizard(config: &PhantomConfig) -> Result<()> {
     println!("\nStarting PHANTOM Interactive Wizard...\n");
 
-    let modes = &["Scan", "Proxy", "Tunnel", "Wrap", "eBPF Filter", "TUI Dashboard (Top Tier)"];
+    let modes = &["Scan", "Proxy", "Tunnel", "Wrap", "eBPF Filter", "TUI Dashboard"];
     let selection = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Select operation mode")
         .default(0)

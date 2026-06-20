@@ -9,7 +9,7 @@ use ratatui::{
     backend::CrosstermBackend,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
-    text::{Line, Span, Text},
+    text::{Line, Span},
     widgets::{Block, Borders, Gauge, List, ListItem, Paragraph, Tabs},
     Frame, Terminal,
 };
@@ -115,12 +115,12 @@ impl Dashboard {
             .split(f.size());
 
         // Header with tabs
-        let titles = ["Proxy", "Tunnel", "Logs"];
+        let titles = [" Proxy ", " Tunnel ", " Scanner/Logs "];
         let tabs = Tabs::new(titles.iter().map(|t| Line::from(*t)).collect::<Vec<_>>())
-            .block(Block::default().borders(Borders::ALL).title("PHANTOM Dashboard"))
+            .block(Block::default())
             .select(self.active_tab)
-            .style(Style::default().fg(Color::Cyan))
-            .highlight_style(Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD));
+            .style(Style::default().fg(Color::DarkGray))
+            .highlight_style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD | Modifier::REVERSED));
         f.render_widget(tabs, chunks[0]);
 
         // Main content based on selected tab
@@ -132,9 +132,9 @@ impl Dashboard {
         }
 
         // Footer
-        let footer = Paragraph::new("Press 'q' to quit | Tab to switch views | ←/→ to navigate")
-            .style(Style::default().fg(Color::DarkGray))
-            .block(Block::default().borders(Borders::ALL));
+        let footer = Paragraph::new(" [Q] Quit  [TAB] Switch View  [←/→] Navigate ")
+            .style(Style::default().fg(Color::DarkGray).add_modifier(Modifier::ITALIC))
+            .block(Block::default());
         f.render_widget(footer, chunks[2]);
     }
 
@@ -147,31 +147,35 @@ impl Dashboard {
         // Left: Statistics
         let stats_text = vec![
             Line::from(vec![
-                Span::raw("Connections: "),
-                Span::styled(self.proxy_stats.connections.to_string(), Style::default().fg(Color::Green)),
+                Span::styled("● ", Style::default().fg(Color::Green)),
+                Span::raw("Active Connections: "),
+                Span::styled(self.proxy_stats.connections.to_string(), Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
             ]),
             Line::from(vec![
-                Span::raw("Bytes Sent: "),
-                Span::styled(format_bytes(self.proxy_stats.bytes_sent), Style::default().fg(Color::Cyan)),
+                Span::styled("● ", Style::default().fg(Color::Blue)),
+                Span::raw("TX Bytes:           "),
+                Span::styled(format_bytes(self.proxy_stats.bytes_sent), Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
             ]),
             Line::from(vec![
-                Span::raw("Bytes Received: "),
-                Span::styled(format_bytes(self.proxy_stats.bytes_received), Style::default().fg(Color::Cyan)),
+                Span::styled("● ", Style::default().fg(Color::Magenta)),
+                Span::raw("RX Bytes:           "),
+                Span::styled(format_bytes(self.proxy_stats.bytes_received), Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
             ]),
             Line::from(vec![
-                Span::raw("Fragments Sent: "),
-                Span::styled(self.proxy_stats.fragments_sent.to_string(), Style::default().fg(Color::Yellow)),
+                Span::styled("● ", Style::default().fg(Color::Yellow)),
+                Span::raw("IP Fragments Sent:  "),
+                Span::styled(self.proxy_stats.fragments_sent.to_string(), Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
             ]),
         ];
 
-        let stats = Paragraph::new(stats_text)
-            .block(Block::default().borders(Borders::ALL).title("Statistics"));
+        let stats = Paragraph::new(stats_text).block(Block::default());
         f.render_widget(stats, chunks[0]);
 
         // Right: Activity gauge
         let gauge = Gauge::default()
-            .block(Block::default().borders(Borders::ALL).title("Activity"))
-            .gauge_style(Style::default().fg(Color::Green))
+            .block(Block::default().title(" Traffic Load "))
+            .gauge_style(Style::default().fg(Color::Cyan).bg(Color::DarkGray))
+            .use_unicode(true) // Makes it look blocky/pixelated
             .percent(50);
         f.render_widget(gauge, chunks[1]);
     }
@@ -179,37 +183,43 @@ impl Dashboard {
     fn render_tunnel_tab(&self, f: &mut Frame, area: Rect) {
         let text = vec![
             Line::from(vec![
+                Span::styled("◼ ", Style::default().fg(Color::LightMagenta)),
                 Span::raw("Mode: "),
-                Span::styled(&self.tunnel_stats.mode, Style::default().fg(Color::Magenta)),
+                Span::styled(&self.tunnel_stats.mode, Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
             ]),
             Line::from(vec![
-                Span::raw("Packets Sent: "),
-                Span::styled(self.tunnel_stats.packets_sent.to_string(), Style::default().fg(Color::Green)),
+                Span::styled("◼ ", Style::default().fg(Color::LightGreen)),
+                Span::raw("Packets TX: "),
+                Span::styled(self.tunnel_stats.packets_sent.to_string(), Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
             ]),
             Line::from(vec![
-                Span::raw("Packets Received: "),
-                Span::styled(self.tunnel_stats.packets_received.to_string(), Style::default().fg(Color::Cyan)),
+                Span::styled("◼ ", Style::default().fg(Color::LightBlue)),
+                Span::raw("Packets RX: "),
+                Span::styled(self.tunnel_stats.packets_received.to_string(), Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
             ]),
             Line::from(vec![
+                Span::styled("◼ ", Style::default().fg(Color::LightRed)),
                 Span::raw("Errors: "),
-                Span::styled(self.tunnel_stats.errors.to_string(), Style::default().fg(Color::Red)),
+                Span::styled(self.tunnel_stats.errors.to_string(), Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
             ]),
         ];
 
-        let paragraph = Paragraph::new(text)
-            .block(Block::default().borders(Borders::ALL).title("Tunnel Status"));
+        let paragraph = Paragraph::new(text).block(Block::default());
         f.render_widget(paragraph, area);
     }
 
     fn render_logs_tab(&self, f: &mut Frame, area: Rect) {
         let items: Vec<ListItem> = self.logs
             .iter()
-            .map(|log| ListItem::new(Line::from(log.as_str())))
+            .map(|log| ListItem::new(Line::from(vec![
+                Span::styled("~> ", Style::default().fg(Color::DarkGray)),
+                Span::raw(log.as_str())
+            ])))
             .collect();
 
         let list = List::new(items)
-            .block(Block::default().borders(Borders::ALL).title("Logs"))
-            .style(Style::default().fg(Color::White));
+            .block(Block::default().title("Scanner Telemetry & Logs"))
+            .style(Style::default().fg(Color::Gray));
         f.render_widget(list, area);
     }
 
