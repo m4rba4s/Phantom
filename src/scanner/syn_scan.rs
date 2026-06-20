@@ -65,6 +65,7 @@ pub struct ScanResult {
     pub port: u16,
     pub status: PortStatus,
     pub latency_ms: Option<f64>,
+    pub os_guess: Option<String>,
 }
 
 /// SYN Scanner implementation
@@ -220,7 +221,9 @@ impl SynScanner {
                                 }
                             };
                             
-                            let _ = res_tx.blocking_send((port, status));
+                            let os_guess = Self::guess_os_from_window(parsed.window_size);
+                            
+                            let _ = res_tx.blocking_send((port, status, os_guess));
                         }
                     }
                 }
@@ -245,7 +248,7 @@ impl SynScanner {
 
         info!("Probes sent. Processing results...");
         
-        while let Some((port, status)) = res_rx.recv().await {
+        while let Some((port, status, os_guess)) = res_rx.recv().await {
             let latency = self
                 .pending_probes
                 .get(&port)
@@ -257,6 +260,7 @@ impl SynScanner {
                     port,
                     status,
                     latency_ms: latency,
+                    os_guess,
                 },
             );
 
@@ -281,6 +285,7 @@ impl SynScanner {
                         port: *port,
                         status: default_status,
                         latency_ms: None,
+                        os_guess: None,
                     },
                 );
             }
@@ -456,12 +461,15 @@ impl SynScanner {
                                 .get(&port)
                                 .map(|start| start.elapsed().as_secs_f64() * 1000.0);
 
+                            let os_guess = Self::guess_os_from_window(parsed.window_size);
+
                             self.results.insert(
                                 port,
                                 ScanResult {
                                     port,
                                     status,
                                     latency_ms: latency,
+                                    os_guess,
                                 },
                             );
 
@@ -498,6 +506,18 @@ impl SynScanner {
             // Random high port
             let mut rng = rand::thread_rng();
             rng.gen_range(32768..61000)
+        }
+    }
+
+    /// Basic OS fingerprinting heuristic based on TCP Window Size
+    fn guess_os_from_window(window: u16) -> Option<String> {
+        // These are extremely basic heuristics for passive fingerprinting
+        match window {
+            5840 | 5720 | 14600 | 28960 | 29200 | 65535 => Some("Linux".to_string()),
+            8192 | 16384 | 64240 => Some("Windows".to_string()),
+            4128 => Some("FreeBSD/macOS".to_string()),
+            _ if window > 32000 => Some("Unknown (Large Window)".to_string()),
+            _ => None,
         }
     }
 

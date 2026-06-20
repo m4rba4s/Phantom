@@ -374,6 +374,7 @@ pub struct ParsedPacket {
     #[allow(dead_code)]
     pub ack_num: u32,
     pub flags: TcpFlags,
+    pub window_size: u16,
 }
 
 impl ParsedPacket {
@@ -416,6 +417,7 @@ impl ParsedPacket {
             | ((tcp[10] as u32) << 8)
             | (tcp[11] as u32);
         let flags = TcpFlags::from_byte(tcp[13]);
+        let window_size = ((tcp[14] as u16) << 8) | (tcp[15] as u16);
 
         Some(Self {
             src_ip,
@@ -425,6 +427,7 @@ impl ParsedPacket {
             seq_num,
             ack_num,
             flags,
+            window_size,
         })
     }
 }

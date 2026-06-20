@@ -110,8 +110,8 @@ async fn run_scan_wizard(config: &PhantomConfig) -> Result<()> {
 
     let results = scanner::run_scan(&scan_config).await?;
 
-    println!("\n{:<8} {:<12} {:<10}", "PORT", "STATE", "LATENCY");
-    println!("{}", "-".repeat(32));
+    println!("\n{:<8} {:<12} {:<10} {:<20}", "PORT", "STATE", "LATENCY", "OS GUESS");
+    println!("{}", "-".repeat(50));
 
     for result in &results {
         if result.status == scanner::PortStatus::Open {
@@ -124,8 +124,10 @@ async fn run_scan_wizard(config: &PhantomConfig) -> Result<()> {
                 scanner::ScanType::Syn => "\x1b[32mopen\x1b[0m       ",
                 _ => "\x1b[33mopen|filt\x1b[0m  ",
             };
+            
+            let os_guess = result.os_guess.as_deref().unwrap_or("-");
                 
-            println!("{:<8} {} {:<10}", result.port, status_str, latency);
+            println!("{:<8} {} {:<10} \x1b[36m{:<20}\x1b[0m", result.port, status_str, latency, os_guess);
         }
     }
 
