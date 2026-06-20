@@ -72,14 +72,14 @@ governor = "0.10.4"
 aya = "0.13"
 aya-log = "0.2"
 [features]
-default = []
+default = ["tui"]
 tui = ["ratatui", "crossterm"]
 chromium_capture = ["chromiumoxide"]
 fuzz = []
 
 [profile.release]
 opt-level = 3
-lto = true
+lto = false
 strip = true
 panic = "abort"
 

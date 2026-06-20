@@ -12,11 +12,8 @@ impl EbpfLoader {
     /// Loads the compiled eBPF XDP program and attaches it to the specified interface.
     pub fn load_and_attach(iface: &str) -> anyhow::Result<Self> {
         // In a real project, we would use a build script to compile the eBPF code
-        // and include it via `include_bytes!`. For Phantom, we assume the code
-        // is compiled to the target directory.
-        
-        let bpf_code = include_bytes!("../../netprobe-ebpf/target/bpfel-unknown-none/release/netprobe-ebpf");
-        let mut bpf = Ebpf::load(bpf_code)?;
+        pub const EBPF_PROGRAM: &[u8] = aya::include_bytes_aligned!("../../target-ebpf/bpfel-unknown-none/release/netprobe-ebpf");
+        let mut bpf = Ebpf::load(EBPF_PROGRAM)?;
 
         // Attempt to initialize BPF Logger (may fail if aya-log was removed from the kernel side)
         if let Err(e) = EbpfLogger::init(&mut bpf) {

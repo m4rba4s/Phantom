@@ -8,4 +8,7 @@ aya-ebpf = "0.1.0"
 network-types = "0.0.5"
 
 
+[[bin]]
+name = "netprobe-ebpf"
+path = "src/main.rs"
 

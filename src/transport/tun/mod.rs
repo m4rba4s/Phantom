@@ -1,5 +1,6 @@
 pub mod device;
 pub mod mock;
+pub mod route;
 
 use async_trait::async_trait;
 
