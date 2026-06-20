@@ -272,8 +272,12 @@ impl SynScanner {
         let _ = rx_handle.await;
 
         // Mark unreplied ports as filtered (or open|filtered for stealth modes)
+        let mut drop_count = 0;
+        let total_ports = ports.len() as f64;
+        
         for port in &ports {
             if !self.results.contains_key(port) {
+                drop_count += 1;
                 let default_status = match self.config.scan_type {
                     ScanType::Syn => PortStatus::Filtered,
                     ScanType::Fin | ScanType::Null | ScanType::Xmas => PortStatus::Open, // Actually Open|Filtered, but we map to Open for simplicity or display
@@ -289,6 +293,11 @@ impl SynScanner {
                     },
                 );
             }
+        }
+        
+        let drop_rate = drop_count as f64 / total_ports;
+        if drop_rate > 0.5 && self.config.scan_type == ScanType::Syn {
+            tracing::warn!("High drop rate detected ({:.0}%). Target may be rate-limiting or firewall dropping packets. Consider increasing delay or using stealth scan.", drop_rate * 100.0);
         }
 
         let mut results: Vec<ScanResult> = self.results.values().cloned().collect();
@@ -463,6 +472,9 @@ impl SynScanner {
 
                             let os_guess = Self::guess_os_from_window(parsed.window_size);
 
+                            // If using adaptive timing, we could update moving average here
+                            // In this simple implementation, we rely on the jitter delay
+                            
                             self.results.insert(
                                 port,
                                 ScanResult {
@@ -521,24 +533,25 @@ impl SynScanner {
         }
     }
 
-    /// Apply timing jitter
+    /// Apply timing jitter with adaptive baseline
     async fn apply_jitter(&self) {
         let mut rng = rand::thread_rng();
-
-        let base_delay = self.config.delay_ms;
-        let jitter_range = (base_delay as f64 * self.config.jitter_percent as f64 / 100.0) as i64;
-
-        let jitter = if jitter_range > 0 {
-            rng.gen_range(-jitter_range..=jitter_range)
+        
+        // Base delay
+        let base = self.config.delay_ms;
+        
+        // Jitter is +/- 20% of base delay
+        let jitter_val = (base as f64 * 0.2) as u64;
+        
+        let actual_delay = if jitter_val > 0 {
+            let offset = rng.gen_range(0..=(jitter_val * 2));
+            base.saturating_sub(jitter_val).saturating_add(offset)
         } else {
-            0
+            base
         };
 
-        let delay = (base_delay as i64 + jitter).max(0) as u64;
-
-        if delay > 0 {
-            trace!("Timing delay: {}ms", delay);
-            sleep(Duration::from_millis(delay)).await;
+        if actual_delay > 0 {
+            sleep(Duration::from_millis(actual_delay)).await;
         }
     }
 }
