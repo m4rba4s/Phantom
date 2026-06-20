@@ -7,9 +7,5 @@ edition = "2021"
 aya-ebpf = "0.1.0"
 network-types = "0.0.5"
 
-[profile.release]
-panic = "abort"
-opt-level = "s"
-lto = true
 
 

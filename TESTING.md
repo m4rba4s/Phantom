@@ -38,12 +38,12 @@ sudo ip addr add 10.10.10.1/24 dev xdp_test
 **Отправка пакета:**
 В другом окне терминала отправляем обычный пакет (пройдёт):
 ```bash
-echo -n "HELLO_WORLD" | nc -u -q 1 10.10.10.1 9999
+python3 -c "import socket; socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(b'HELLO_WORLD', ('10.10.10.1', 9999))"
 ```
 
 Отправляем пакет с магическим паттерном `0xDEADBEEF` (будет заблокирован ядром на этапе XDP):
 ```bash
-echo -ne "\xDE\xAD\xBE\xEF_HACK" | nc -u -q 1 10.10.10.1 9999
+python3 -c "import socket; socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(b'\xDE\xAD\xBE\xEF_HACK', ('10.10.10.1', 9999))"
 ```
 
 **Ожидаемый результат:** 
@@ -55,8 +55,9 @@ TUN интерфейс требует права `CAP_NET_ADMIN`.
 
 Для тестирования моста (`TunBridge`):
 
-1. Выдайте бинарнику phantom права (capabilities):
+1. Убедитесь, что находитесь в **корневой директории** проекта `Phantom`, а не внутри `netprobe-ebpf`:
    ```bash
+   cd ~/luke/Phantom  # или просто cd .. если вы были в netprobe-ebpf
    cargo build --release
    sudo setcap cap_net_admin=eip target/release/phantom
    ```

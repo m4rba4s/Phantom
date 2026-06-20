@@ -81,6 +81,7 @@ fuzz = []
 opt-level = 3
 lto = true
 strip = true
+panic = "abort"
 
 [[bin]]
 name = "phantom"
